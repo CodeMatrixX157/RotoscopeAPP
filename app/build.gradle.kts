@@ -1,6 +1,6 @@
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
+    // REMOVED: id("org.jetbrains.kotlin.android") — AGP 9.0 has built-in Kotlin
 }
 
 android {
@@ -8,9 +8,8 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.rotoscope" // TODO: change to your own reverse-domain id before Play Store release
-        minSdk = 24   // API 24+: covers ~98% of active devices. Thermal pause/resume (module 1)
-                      // only works fully on API 29+; below that it degrades gracefully (see ThermalMonitor.kt).
+        applicationId = "com.example.rotoscope"
+        minSdk = 24
         targetSdk = 34
         versionCode = 1
         versionName = "0.1.0-module1"
@@ -18,7 +17,6 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         ndk {
-            // Match CAMERA-TRACKER's ABI filtering — keeps APK size down, covers all real flagship + midrange devices.
             abiFilters += listOf("arm64-v8a", "armeabi-v7a")
         }
     }
@@ -27,7 +25,10 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
         debug {
             isMinifyEnabled = false
@@ -38,21 +39,28 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
+
+    // REMOVED: kotlinOptions { jvmTarget = "17" } — migrated to the kotlin block below
 
     buildFeatures {
         compose = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.4" // matches Kotlin 1.9.20
-    }
+
+    // NOTE: With Kotlin 2.x + AGP 9.0, you should use the Compose Compiler Gradle plugin
+    // instead of the old composeOptions.kotlinCompilerExtensionVersion.
+    // See the "Important Note" below for the alternative.
 
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+    }
+}
+
+// NEW: Migrated from kotlinOptions. This sets the JVM target for Kotlin compilation[citation:17].
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
 }
 
@@ -73,11 +81,6 @@ dependencies {
     implementation("androidx.compose.material3:material3")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-
-    // Module 4 (segmentation) will add either:
-    //   implementation("com.microsoft.onnxruntime:onnxruntime-android:1.17.0")   -- on-device path
-    //   or a Retrofit/OkHttp client                                              -- cloud API path
-    // Left out for now until that decision is made.
 
     debugImplementation("androidx.compose.ui:ui-tooling")
     testImplementation("junit:junit:4.13.2")

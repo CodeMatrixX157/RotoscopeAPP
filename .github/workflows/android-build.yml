@@ -21,13 +21,9 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.5          # ← THIS IS THE KEY FIX
 
-      # NOTE: no gradlew wrapper is committed yet (the wrapper jar is a binary that must be
-      # downloaded from Gradle's servers, which isn't possible from this offline dev sandbox).
-      # setup-gradle above provides a working `gradle` on the runner instead, so this builds fine
-      # as-is. Recommended follow-up: once you're on a machine with internet, run
-      # `gradle wrapper --gradle-version 8.5` in the project root and commit gradlew +
-      # gradlew.bat + gradle/wrapper/* — that pins the exact Gradle version for reproducible builds.
       - name: Build debug APK
         run: gradle assembleDebug --stacktrace
 
